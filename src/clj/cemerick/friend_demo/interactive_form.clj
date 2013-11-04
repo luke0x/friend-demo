@@ -31,16 +31,25 @@
   []
   (friend/current-authentication))
 
+(defn logged-in?
+  []
+  (if (current-user)
+    true
+    false))
+
 (compojure/defroutes routes
   (GET "/" req
     (h/html5
       misc/pretty-head
       (misc/pretty-body
-        [:h3 "welcome, " (:fullname (current-user))]
+        (if (logged-in?)
+          [:h3 "welcome, " (:fullname (current-user))]
+          [:h3 "you should log in"])
         [:h4 "identity: " (str (friend/identity req))]
         [:h4 "current auth: " (str (friend/current-authentication))]
         [:p (roles-or-anon req)]
-        login-form
+        (if (not (logged-in?))
+          login-form)
         [:p (e/link-to (misc/context-uri req "requires-authentication") "Page requires authentication")]
         [:p (e/link-to (misc/context-uri req "logout") "Logout")])))
   (GET "/login" req
