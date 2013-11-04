@@ -1,13 +1,10 @@
 (ns cemerick.friend-demo.users
   (:require [cemerick.friend.credentials :refer (hash-bcrypt)]))
 
-(def users (atom {"friend" {:username "friend"
+(def users (atom {"user" {:username "user"
+                          :fullname "Default User"
+                          :password (hash-bcrypt "password")
+                          :roles #{::user}}
+                  "friend" {:username "friend"
                             :password (hash-bcrypt "clojure")
-                            :pin "1234" ;; only used by multi-factor
-                            :roles #{::user}}
-                  "friend-admin" {:username "friend-admin"
-                                  :password (hash-bcrypt "clojure")
-                                  :pin "1234" ;; only used by multi-factor
-                                  :roles #{::admin}}}))
-
-(derive ::admin ::user)
+                            :roles #{::user}}}))
