@@ -23,13 +23,14 @@
                  [bultitude "0.1.7"]
                  
                  ;; only used for foundation js/css
-                 [org.webjars/foundation "4.0.4"]]
+                 [org.webjars/foundation "4.0.4"]
+                 [ring/ring-devel "1.1.0"]]
   
   ;; the final clean keeps AOT garbage out of the REPL's way, and keeps
   ;; the namespace metadata available at runtime
   :aliases  {"sanity-check" ["do" "clean," "compile" ":all," "clean"]}
   
   :main cemerick.friend-demo
-  
+  :plugins [[lein-ring "0.8.7"]]
   :ring {:handler cemerick.friend-demo/site
          :init cemerick.friend-demo/init})
