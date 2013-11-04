@@ -63,22 +63,9 @@ recognize two different username/password combinations:"]
   [h app-metadata]
   (fn [req] (h (assoc req :demo app-metadata))))
 
-(def site (apply compojure/routes
-            landing
-            (route/resources "/" {:root "META-INF/resources/webjars/foundation/4.0.4/"})
-            (for [{:keys [app page route-prefix] :as metadata} the-menagerie]
-              (compojure/context route-prefix []
-                (wrap-app-metadata (compojure/routes (or page (fn [_])) (or app (fn [_]))) metadata)))))
-
-(defn run
-  []
-  (defonce ^:private server
-    (ring.adapter.jetty/run-jetty #'site {:port 8080 :join? false}))
-  server)
-
-(defn -main
-  "For heroku."
-  [& [port]]
-  (if port
-    (ring.adapter.jetty/run-jetty #'site {:port (Integer. port)})
-    (println "No port specified, exiting.")))
+(def site
+  (apply compojure/routes
+    (route/resources "/" {:root "META-INF/resources/webjars/foundation/4.0.4/"})
+    (for [{:keys [app page route-prefix] :as metadata} the-menagerie]
+      (compojure/context route-prefix []
+        (wrap-app-metadata (compojure/routes (or page (fn [_])) (or app (fn [_]))) metadata)))))
