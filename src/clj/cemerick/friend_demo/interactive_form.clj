@@ -20,41 +20,41 @@
       [:div "Password" [:input {:type "password" :name "password"}]]
       [:div [:input {:type "submit" :class "button" :value "Login"}]]]]]])
 
+(defn roles-or-anon
+  [req]
+  (if-let [identity (friend/identity req)]
+    (apply str
+      "Logged in, with these roles: " (-> identity friend/current-authentication))
+    "anonymous user"))
+
+(defn current-user
+  []
+  (friend/current-authentication))
+
 (compojure/defroutes routes
   (GET "/" req
     (h/html5
       misc/pretty-head
       (misc/pretty-body
-       (misc/github-link req)
-       [:h2 "Interactive form authentication"]
-       [:p "This app demonstrates typical username/password authentication, and a pinch of Friend's authorization capabilities."]
-       [:h3 "Current Status " [:small "(this will change when you log in/out)"]]
-       [:p (if-let [identity (friend/identity req)]
-             (apply str "Logged in, with these roles: "
-               (-> identity friend/current-authentication :roles))
-             "anonymous user")]
-       login-form
-       [:h3 "Authorization demos"]
-       [:p "Each of these links require particular roles (or, any authentication) to access. "
-           "If you're not authenticated, you will be redirected to a dedicated login page. "
-           "If you're already authenticated, but do not meet the authorization requirements "
-           "(e.g. you don't have the proper role), then you'll get an Unauthorized HTTP response."]
-       [:ul [:li (e/link-to (misc/context-uri req "role-user") "Requires the `user` role")]
-        [:li (e/link-to (misc/context-uri req "role-admin") "Requires the `admin` role")]
-        [:li (e/link-to (misc/context-uri req "requires-authentication")
-               "Requires any authentication, no specific role requirement")]]
-       [:h3 "Logging out"]
-       [:p (e/link-to (misc/context-uri req "logout") "Click here to log out") "."])))
+        [:h3 "welcome, " (:fullname (current-user))]
+        [:h4 "identity: " (str (friend/identity req))]
+        [:h4 "current auth: " (str (friend/current-authentication))]
+        [:p (roles-or-anon req)]
+        login-form
+        [:p (e/link-to (misc/context-uri req "requires-authentication") "Page requires authentication")]
+        [:p (e/link-to (misc/context-uri req "logout") "Logout")])))
   (GET "/login" req
-    (h/html5 misc/pretty-head (misc/pretty-body login-form)))
+    (h/html5
+      misc/pretty-head (misc/pretty-body login-form)))
   (GET "/logout" req
-    (friend/logout* (resp/redirect (str (:context req) "/"))))
+    (friend/logout*
+      (resp/redirect (str (:context req) "/"))))
   (GET "/requires-authentication" req
-    (friend/authenticated "Thanks for authenticating!"))
-  (GET "/role-user" req
-    (friend/authorize #{::users/user} "You're a user!"))
-  (GET "/role-admin" req
-    (friend/authorize #{::users/admin} "You're an admin!")))
+    (friend/authenticated
+      (h/html5
+        misc/pretty-head
+        (misc/pretty-body
+          "Thanks for authenticating!")))))
 
 (def page (handler/site
             (friend/authenticate
